@@ -105,9 +105,85 @@ for user in not_following_back:
         print(f"Rate limit remaining: {response.headers.get('X-RateLimit-Remaining')}")
 ```
 
-## Testing the Script
+### Suggestions for Improvement:
 
-Run the script again after implementing these changes and observe the output. If the issue persists, it might be helpful to review GitHub's API documentation or contact GitHub support for further assistance.
-```
+1. **Error Handling for API Rate Limits**:
+   - The GitHub API has a rate limit (usually 5,000 requests per hour for authenticated users). If you exceed this, the script may fail.
+   - Include a check for rate limits in the headers.
 
-You can add this to your `README.md` or as a separate troubleshooting guide in your repository.
+   ```python
+   rate_limit_url = 'https://api.github.com/rate_limit'
+   rate_limit = requests.get(rate_limit_url, headers=headers).json()
+   remaining = rate_limit['rate']['remaining']
+   print(f"Remaining API calls: {remaining}")
+   if remaining == 0:
+       print("Rate limit exceeded. Try again later.")
+       exit()
+   ```
+
+2. **Validate Response Data**:
+   - Ensure the API responses are successful and contain the expected data before processing.
+
+   ```python
+   followers_response = requests.get(followers_url, headers=headers)
+   if followers_response.status_code != 200:
+       print("Failed to fetch followers. Check your token or API limits.")
+       exit()
+   followers = followers_response.json()
+   ```
+
+3. **Pagination Handling**:
+   - The GitHub API paginates responses, providing 30 items per page by default. Add pagination support to fetch all data.
+
+   ```python
+   def fetch_all(url):
+       results = []
+       while url:
+           response = requests.get(url, headers=headers)
+           if response.status_code != 200:
+               print(f"Failed to fetch: {url}")
+               break
+           results.extend(response.json())
+           url = response.links.get('next', {}).get('url')  # Get next page URL
+       return results
+
+   followers = fetch_all(followers_url)
+   following = fetch_all(following_url)
+   ```
+
+4. **Log and Monitor Actions**:
+   - Instead of directly unfollowing or following users, log actions into a file for review before execution.
+
+   ```python
+   with open('action_log.txt', 'w') as log_file:
+       for user in not_following_back:
+           log_file.write(f"Unfollow: {user}\n")
+       for user in not_followed_back:
+           log_file.write(f"Follow: {user}\n")
+   ```
+
+5. **Rate-Limit-Friendly Delays**:
+   - Add delays between API requests to avoid hitting rate limits quickly.
+
+   ```python
+   import time
+
+   for user in not_following_back:
+       unfollow_url = f'https://api.github.com/user/following/{user}'
+       response = requests.delete(unfollow_url, headers=headers)
+       if response.status_code == 204:
+           print(f"Unfollowed {user}")
+       else:
+           print(f"Failed to unfollow {user}")
+       time.sleep(1)  # Delay between requests
+   ```
+
+6. **Personal Access Token Security**:
+   - Avoid hardcoding tokens. Use environment variables for better security.
+
+   ```python
+   import os
+   token = os.getenv('GITHUB_TOKEN')
+   ```
+
+---
