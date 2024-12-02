@@ -1,8 +1,10 @@
 import requests
+import os
+import time
 
-# Replace with your GitHub username and personal access token
+# Replace with your GitHub username and load token from environment
 username = 'your_github_username'
-token = 'your_github_token'
+token = os.getenv('GITHUB_TOKEN')
 
 # Headers for authentication
 headers = {
@@ -10,24 +12,30 @@ headers = {
     'Accept': 'application/vnd.github.v3+json'
 }
 
-# Fetch followers
+# Helper function to handle pagination
+def fetch_all(url):
+    results = []
+    while url:
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            print(f"Failed to fetch: {url}")
+            break
+        results.extend(response.json())
+        url = response.links.get('next', {}).get('url')  # Get next page URL
+    return results
+
+# Fetch followers and following
 followers_url = f'https://api.github.com/users/{username}/followers'
-followers = requests.get(followers_url, headers=headers).json()
-
-# Fetch following
 following_url = f'https://api.github.com/users/{username}/following'
-following = requests.get(following_url, headers=headers).json()
 
-# Extract usernames
-followers_usernames = {user['login'] for user in followers}
-following_usernames = {user['login'] for user in following}
+followers = {user['login'] for user in fetch_all(followers_url)}
+following = {user['login'] for user in fetch_all(following_url)}
 
-# Identify users not following back
-not_following_back = following_usernames - followers_usernames
-# Identify users you are not following back
-not_followed_back = followers_usernames - following_usernames
+# Identify users
+not_following_back = following - followers
+not_followed_back = followers - following
 
-# Unfollow users not following you back
+# Unfollow users not following back
 for user in not_following_back:
     unfollow_url = f'https://api.github.com/user/following/{user}'
     response = requests.delete(unfollow_url, headers=headers)
@@ -35,8 +43,9 @@ for user in not_following_back:
         print(f"Unfollowed {user}")
     else:
         print(f"Failed to unfollow {user}")
+    time.sleep(1)  # Delay between requests
 
-# Automatically follow users you're not following back
+# Follow users not followed back
 for user in not_followed_back:
     follow_url = f'https://api.github.com/user/following/{user}'
     response = requests.put(follow_url, headers=headers)
@@ -44,6 +53,7 @@ for user in not_followed_back:
         print(f"Followed {user}")
     else:
         print(f"Failed to follow {user}")
+    time.sleep(1)  # Delay between requests
 
 print("\nAccounts you're following but not following you back:")
 print(not_following_back)
