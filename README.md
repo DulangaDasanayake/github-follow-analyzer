@@ -1,189 +1,110 @@
-﻿# GitHub Follower-Following Comparator
+# GitHub Follower-Following Manager
 
-This Python program compares your GitHub followers and following lists. It identifies accounts that you're following but aren't following you back and vice versa. The program helps you keep track of your connections on GitHub.
+This Python script helps you manage your GitHub followers and following lists. It identifies users you're following who don't follow you back and users who follow you but whom you're not following back. You can also automate following or unfollowing based on these lists.
+
 
 ## Features
 
-- **Follower vs Following Comparison:** Easily see who isn't following you back and who you're not following back.
-- **Simple and Clean:** No auto-unfollow feature, giving you full control over your connections.
+- **Follower vs Following Comparison**:  
+  Easily see who isn't following you back and who you're not following back.  
+- **Automated Management**:  
+  - Unfollow users who don't follow you back.  
+  - Follow users who follow you but whom you're not following.  
+- **Detailed Output**:  
+  Prints lists of discrepancies for easy review.  
 
-## How It Works
-
-1. **Authentication:** The program uses your GitHub username and personal access token to access the GitHub API.
-2. **Comparison:** It fetches the lists of your followers and following, then compares them to identify differences.
-3. **Output:** The program prints out two lists:
-   - Users you follow but who don't follow you back.
-   - Users who follow you but whom you're not following back.
 
 ## Requirements
 
-- Python 3.x
-- `requests` library
+- **Python 3.x**  
+- **Requests library** (Install using `pip install requests`)  
 
-Install the `requests` library if you haven't already:
 
-```bash
-pip install requests
-```
+## How It Works
+
+1. **Authentication**:  
+   The script uses your GitHub username and personal access token to access the GitHub API.  
+2. **Comparison**:  
+   It fetches the lists of your followers and following, then compares them to identify differences.  
+3. **Automated Actions**:  
+   - Unfollows users who don't follow you back.  
+   - Follows users who follow you but whom you're not following.  
+4. **Output**:  
+   Displays two lists:  
+   - Users you're following but who don't follow you back.  
+   - Users following you but whom you're not following.  
+
 
 ## Usage
 
-1. Clone this repository.
-2. Replace `'your_github_username'` and `'your_github_token'` in the script with your GitHub credentials.
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/your_username/github-follow-analyzer.git
+   cd github-follow-analyzer
+   ```
+2. Replace the placeholders in the script:  
+   - `'your_github_username'`: Your GitHub username.  
+   - `'GITHUB_TOKEN'`: Your personal access token.  
 3. Run the script:
+   ```bash
+   python github_follow_analyzer.py
+   ```
+4. Review the output and check the automated actions.
 
-```bash
-python compare_github_followers.py
+
+## Troubleshooting
+
+### Common Issues and Fixes:
+
+#### 1. **Unfollowing Doesn't Work**:
+   - Ensure the access token has the correct permissions (the `user` scope).  
+   - Check the API response for errors or rate limits:
+     ```python
+     print(response.status_code, response.text)
+     ```
+   - Verify that the API endpoint is correct:
+     ```
+     DELETE https://api.github.com/user/following/{username}
+     ```
+
+#### 2. **API Rate Limits**:
+   - GitHub's API allows 5,000 requests per hour for authenticated users.  
+   - Check your remaining requests using:
+     ```python
+     rate_limit_url = 'https://api.github.com/rate_limit'
+     response = requests.get(rate_limit_url, headers=headers)
+     print(response.json())
+     ```
+   - Add delays between requests to avoid hitting limits:
+     ```python
+     time.sleep(1)  # Add a 1-second delay
+     ```
+
+#### 3. **Token Issues**:
+   - Ensure the token is valid and has not expired.  
+   - Regenerate the token if needed and update it in the script.  
+
+#### 4. **Environment Variables for Security**:
+   - Avoid hardcoding your token in the script. Use environment variables instead:
+     ```python
+     import os
+     token = os.getenv('GITHUB_TOKEN')
+     ```
+
+
+## Example Output
+
+```plaintext
+Accounts you're following but not following you back:
+{'user1', 'user2', 'user3'}
+
+Accounts following you but you're not following back:
+{'user4', 'user5'}
 ```
 
-4. Review the output to see who you might want to unfollow or follow back.
 
-## Disclaimer
+## Notes
 
-This program respects your privacy and does not perform any actions on your behalf (like unfollowing users). It’s designed to help you analyze your GitHub connections manually.
-
----
-
-# Troubleshooting the issues
-
-## Troubleshooting Guide for GitHub Unfollowing Script
-
-
-If your script reports that it has unfollowed users but the changes are not reflected, follow these troubleshooting steps:
-
-## 1. Check API Response
-Ensure that the API responses are correctly handled and check the actual HTTP status codes returned. For unfollowing, a successful request should return a `204 No Content` status. If not, print the response content to debug:
-
-```python
-if response.status_code == 204:
-    print(f"Unfollowed {user}")
-else:
-    print(f"Failed to unfollow {user}. Status code: {response.status_code}, Response: {response.text}")
-```
-
-## 2. Verify Permissions
-Make sure the access token has the correct permissions. The `user` scope should be sufficient, but double-check the token settings to confirm it has the right scopes.
-
-## 3. Check Rate Limits
-GitHub has rate limits on API requests. Ensure you haven't hit the rate limit for the `DELETE /user/following/:username` endpoint. Check the headers of the API response for rate limit status:
-
-```python
-print(response.headers.get('X-RateLimit-Remaining'))
-```
-
-## 4. Token Validity
-Ensure that your token is valid and has not expired. You can regenerate the token and update your script to use the new token.
-
-## 5. API Endpoint Accuracy
-Confirm that the API endpoint for unfollowing is correct. The endpoint should be:
-
-```
-DELETE https://api.github.com/user/following/{username}
-```
-
-## 6. Check User IDs
-Sometimes user names may not resolve correctly if they are incorrect or if there are discrepancies in the API response. Ensure that the usernames in the `not_following_back` set are accurate.
-
-## 7. Try Manual Verification
-To rule out issues with the API or token, try manually unfollowing a user on GitHub's website to verify that your account can perform the action without issues.
-
-## Example of Improved Debug Output
-
-Here's an updated version of the unfollowing part of the script with additional debugging information:
-
-```python
-# Unfollow users not following you back
-for user in not_following_back:
-    unfollow_url = f'https://api.github.com/user/following/{user}'
-    response = requests.delete(unfollow_url, headers=headers)
-    
-    if response.status_code == 204:
-        print(f"Successfully unfollowed {user}")
-    else:
-        print(f"Failed to unfollow {user}. Status code: {response.status_code}")
-        print(f"Response: {response.text}")
-        print(f"Rate limit remaining: {response.headers.get('X-RateLimit-Remaining')}")
-```
-
-### Suggestions for Improvement:
-
-1. **Error Handling for API Rate Limits**:
-   - The GitHub API has a rate limit (usually 5,000 requests per hour for authenticated users). If you exceed this, the script may fail.
-   - Include a check for rate limits in the headers.
-
-   ```python
-   rate_limit_url = 'https://api.github.com/rate_limit'
-   rate_limit = requests.get(rate_limit_url, headers=headers).json()
-   remaining = rate_limit['rate']['remaining']
-   print(f"Remaining API calls: {remaining}")
-   if remaining == 0:
-       print("Rate limit exceeded. Try again later.")
-       exit()
-   ```
-
-2. **Validate Response Data**:
-   - Ensure the API responses are successful and contain the expected data before processing.
-
-   ```python
-   followers_response = requests.get(followers_url, headers=headers)
-   if followers_response.status_code != 200:
-       print("Failed to fetch followers. Check your token or API limits.")
-       exit()
-   followers = followers_response.json()
-   ```
-
-3. **Pagination Handling**:
-   - The GitHub API paginates responses, providing 30 items per page by default. Add pagination support to fetch all data.
-
-   ```python
-   def fetch_all(url):
-       results = []
-       while url:
-           response = requests.get(url, headers=headers)
-           if response.status_code != 200:
-               print(f"Failed to fetch: {url}")
-               break
-           results.extend(response.json())
-           url = response.links.get('next', {}).get('url')  # Get next page URL
-       return results
-
-   followers = fetch_all(followers_url)
-   following = fetch_all(following_url)
-   ```
-
-4. **Log and Monitor Actions**:
-   - Instead of directly unfollowing or following users, log actions into a file for review before execution.
-
-   ```python
-   with open('action_log.txt', 'w') as log_file:
-       for user in not_following_back:
-           log_file.write(f"Unfollow: {user}\n")
-       for user in not_followed_back:
-           log_file.write(f"Follow: {user}\n")
-   ```
-
-5. **Rate-Limit-Friendly Delays**:
-   - Add delays between API requests to avoid hitting rate limits quickly.
-
-   ```python
-   import time
-
-   for user in not_following_back:
-       unfollow_url = f'https://api.github.com/user/following/{user}'
-       response = requests.delete(unfollow_url, headers=headers)
-       if response.status_code == 204:
-           print(f"Unfollowed {user}")
-       else:
-           print(f"Failed to unfollow {user}")
-       time.sleep(1)  # Delay between requests
-   ```
-
-6. **Personal Access Token Security**:
-   - Avoid hardcoding tokens. Use environment variables for better security.
-
-   ```python
-   import os
-   token = os.getenv('GITHUB_TOKEN')
-   ```
-
----
+- This script is for personal use and respects GitHub's API terms.  
+- Be mindful of your connections before automating follow/unfollow actions.  
+- Always review the lists before making changes.  
