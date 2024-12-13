@@ -3,8 +3,8 @@ import os
 import time
 
 # Replace with your GitHub username and load token from environment
-username = 'your_github_username'
-token = 'GITHUB_TOKEN'
+username = 'GH_USERNAME'
+token = 'GH_TOKEN'
 
 # Headers for authentication
 headers = {
