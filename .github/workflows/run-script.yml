@@ -29,4 +29,4 @@ jobs:
         env:
           GITHUB_USERNAME: ${{ secrets.GH_USERNAME }}
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: python gh_follow_auto.py
+        run: python gh-follow-auto.py
