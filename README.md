@@ -198,31 +198,35 @@ Commit your changes and push them to the repository. The workflow will now run e
 * * * * *
 ```
 ### Examples:
-- Run Every 1 Hour:
 
-Use 0 * * * *.
-This means: At the 0th minute of every hour (e.g., 1:00, 2:00, 3:00, etc.).
+Run Every 1 Hour:
+
+ - Use 0 * * * *.
+ - This means: At the 0th minute of every hour (e.g., 1:00, 2:00, 3:00, etc.).
 ```yaml
 - cron: '0 * * * *'
 ```
-- Run on Monday at 8 AM:
 
-Use 0 8 * * 1.
-This means: At 8:00 AM every Monday (day of the week 1).
+Run on Monday at 8 AM:
+
+ - Use 0 8 * * 1.
+ - This means: At 8:00 AM every Monday (day of the week 1).
 ```yaml
 - cron: '0 8 * * 1'
 ```
-- Run on Thursday at 10 PM:
 
-Use 0 22 * * 4.
-This means: At 10:00 PM every Thursday (day of the week 4).
+Run on Thursday at 10 PM:
+
+ - Use 0 22 * * 4.
+ - This means: At 10:00 PM every Thursday (day of the week 4).
 ```yaml
 - cron: '0 22 * * 4'
 ```
-- Explanation of Common Patterns:
-* means "every."
-Numbers specify exact times (e.g., 8 for 8 AM or 22 for 10 PM).
-Day of the week:
-0 or 7 = Sunday
-1 = Monday
-2 = Tuesday, and so on.
+
+### Explanation of Common Patterns:
+- "*"means "every."
+- Numbers specify exact times (e.g., 8 for 8 AM or 22 for 10 PM).
+- Day of the week:
+  - 0 or 7 = Sunday
+  - 1 = Monday
+  - 2 = Tuesday, and so on.
