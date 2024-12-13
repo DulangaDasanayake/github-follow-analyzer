@@ -3,7 +3,7 @@ name: Run GitHub Follower-Following Manager
 on:
   schedule:
     # Runs at 00:00 UTC every Sunday
-    - cron: '*/5 * * * *'
+    - cron: '59 23 * * 0'
 
 jobs:
   run-script:
