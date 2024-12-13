@@ -107,4 +107,78 @@ Accounts following you but you're not following back:
 
 - This script is for personal use and respects GitHub's API terms.  
 - Be mindful of your connections before automating follow/unfollow actions.  
-- Always review the lists before making changes.  
+- Always review the lists before making changes.
+
+---
+
+# Steps to Automate the Script Using GitHub Actions
+
+## 1. Create a Workflow File
+In your repository, create the directory `.github/workflows` if it doesn't exist. Then, create a file named `run-script.yml` inside it.
+
+## 2. Add the Workflow Configuration
+Copy the following content into the `run-script.yml` file:
+
+```yaml
+name: Run GitHub Follower-Following Manager
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every Sunday
+    - cron: '0 0 * * 0'
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: pip install requests
+
+      # Step 4: Run the script
+      - name: Run the script
+        env:
+          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python github_follow_analyzer.py
+```
+
+## 3. Store Secrets in GitHub
+- Go to your repository on GitHub.
+- Navigate to **Settings** > **Secrets and variables** > **Actions**.
+- Add the following secrets:
+  - `GITHUB_USERNAME`: Your GitHub username.
+  - `GITHUB_TOKEN`: Your personal access token with the required permissions.
+
+## 4. Modify Your Script to Use Environment Variables
+Update your script to fetch the username and token from environment variables:
+
+```python
+import os
+
+username = os.getenv('GITHUB_USERNAME')
+token = os.getenv('GITHUB_TOKEN')
+
+headers = {
+    'Authorization': f'token {token}',
+    'Accept': 'application/vnd.github.v3+json'
+}
+```
+
+## 5. Commit and Push
+Commit your changes and push them to the repository. The workflow will now run every Sunday at midnight UTC.
+
+## 6. Verify the Setup
+- Check the **Actions** tab in your repository to monitor workflow runs.
+- If there are any issues, logs will help you debug them.
